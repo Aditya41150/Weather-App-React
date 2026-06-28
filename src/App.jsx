@@ -5,6 +5,7 @@ import clear from "../Assets/clear.png"
 import clouds from "../Assets/cloud.png"
 import snow from "../Assets/snow.png"
 import rain from "../Assets/rain.png"
+import axios from 'axios';
 
 function App() {
   const apiKey = import.meta.env.VITE_API_KEY;
@@ -12,25 +13,41 @@ function App() {
   const [searchCity, setSearchCity] = useState("");
 
   async function getWeather() {
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&appid=${apiKey}&units=metric`;
+
+
     if (searchCity === '') {   // handling empty input 
       alert("Enter a city name!")
       return;
     }
 
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&appid=${apiKey}&units=metric`;
-
+    // implement axios here
+    
     try {
-      const response = await fetch(url);
-      if (response.status === 404) alert("City not found..");
-      if (response.status === 429) alert("Too many Requests try again later....");
-      if (!response.ok) throw new Error(`Response status: ${response.status}`);
+      const result = await axios.get(url);
 
-      const result = await response.json();
-      setWeather(result);
+      setWeather(result.data)
     } catch (error) {
-      console.error(error.message);
+
+      const status = error.response?.status;
+
+      if(status === 404){
+        alert("City not found")
+      }
+      else if(status === 429) {
+        alert("Too many requests try again later...")
+      }
+      else if(status === 401) {
+        alert("Invalid or missing API key.")
+      }
+      else{
+        alert("Something went wrong.")
+      }
+
+      console.log(error)    
     }
   }
+  //console.log(weather); // print value of result
 
   const getWeatherIcon = () => {
     if (!weather) return clear;
